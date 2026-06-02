@@ -1,0 +1,97 @@
+// docs/architecture/schema.prisma
+// This is the Database Design deliverable for Phase 3.
+// It will be moved to the actual /api/prisma/ folder during Phase 5.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String?   @unique
+  name          String?
+  image         String?
+  tier          Tier      @default(FREE)
+  storageUsed   BigInt    @default(0) // Total bytes uploaded
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  images        Image[]
+  sessions      Session[]
+  apiKeys       ApiKey[]
+  auditLogs     AuditLog[]
+}
+
+enum Tier {
+  FREE
+  PREMIUM
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Image {
+  id          String   @id // Using CUID or Nanoid (e.g. x9f2k3) via application logic
+  userId      String?  // Nullable to support anonymous uploads
+  url         String   // Final Cloudflare R2 / CDN URL
+  deleteToken String?  @unique // Secure token for anonymous users to delete their image
+  mimeType    String
+  size        Int      // File size in bytes
+  width       Int?
+  height      Int?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  views       ImageView[]
+  
+  @@index([userId, createdAt])
+}
+
+model ApiKey {
+  id          String   @id @default(uuid())
+  userId      String
+  name        String
+  keyHash     String   @unique // Hashed version of the token (SHA-256)
+  keyPrefix   String   // First few chars to show the user (e.g., aura_live_abcd...)
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ImageView {
+  id          String   @id @default(uuid())
+  imageId     String
+  ipHash      String?  // Privacy-friendly hashed IP for unique view calculation
+  userAgent   String?
+  country     String?
+  viewedAt    DateTime @default(now())
+
+  image       Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@index([imageId, viewedAt])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String
+  action      String   // e.g., "IMAGE_UPLOADED", "API_KEY_CREATED"
+  entityId    String?  // ID of the affected resource
+  metadata    Json?    // Flexible payload
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, action])
+}
