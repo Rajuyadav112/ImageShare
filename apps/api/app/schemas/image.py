@@ -16,6 +16,8 @@ class ImageConfirmRequest(BaseModel):
     image_id: str
     delete_token: Optional[str] = None
     public_url: Optional[str] = None
+    size: Optional[int] = 0
+    mime_type: Optional[str] = "image/unknown"
 
 class ImageResponse(BaseModel):
     id: str

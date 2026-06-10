@@ -7,6 +7,8 @@ type AnalyticsData = {
   total_bandwidth_bytes: number;
   ai_quota_used: number;
   ai_quota_total: number;
+  storage_limit_bytes: number;
+  tier: string;
 };
 
 export default function Analytics() {
@@ -44,6 +46,8 @@ export default function Analytics() {
   };
 
   const mbUsed = stats ? (stats.total_bandwidth_bytes / (1024 * 1024)).toFixed(1) : "0.0";
+  const limitMb = stats ? (stats.storage_limit_bytes / (1024 * 1024)).toFixed(0) : "100";
+  const bandwidthPercentage = stats ? Math.min((stats.total_bandwidth_bytes / stats.storage_limit_bytes) * 100, 100) : 0;
   const percentage = stats ? (stats.ai_quota_used / stats.ai_quota_total) * 100 : 0;
 
   return (
@@ -140,12 +144,12 @@ export default function Analytics() {
             </div>
             
             <div className="saas-panel p-6 bg-white border border-slate-200 shadow-sm rounded-xl flex flex-col justify-center hover:shadow-md transition-shadow">
-              <h3 className="text-slate-500 text-sm font-medium">Storage Bandwidth</h3>
+              <h3 className="text-slate-500 text-sm font-medium">Storage Bandwidth ({stats ? stats.tier : "FREE"})</h3>
               <p className="text-3xl font-bold text-slate-900 mt-2">
-                {mbUsed} <span className="text-lg text-slate-400 font-normal">MB</span>
+                {mbUsed} <span className="text-lg text-slate-400 font-normal">MB / {limitMb} MB</span>
               </p>
               <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-4">
-                <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: '45%' }}></div>
+                <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: `${bandwidthPercentage}%` }}></div>
               </div>
             </div>
             

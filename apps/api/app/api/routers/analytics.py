@@ -23,9 +23,14 @@ def get_my_analytics(
         select(func.sum(Image.size)).where(Image.user_id == current_user.id)
     ).one_or_none() or 0
     
+    # Calculate storage limit based on subscription tier
+    storage_limit = 100 * 1024 * 1024 if current_user.tier == "FREE" else 1000 * 1024 * 1024
+    
     return AnalyticsResponse(
         total_uploads=total_uploads,
         total_bandwidth_bytes=total_bytes,
         ai_quota_used=min(total_uploads, 50), # Mock AI quota matching uploads up to 50
-        ai_quota_total=50
+        ai_quota_total=50,
+        storage_limit_bytes=storage_limit,
+        tier=current_user.tier
     )

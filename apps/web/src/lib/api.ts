@@ -130,7 +130,9 @@ export const api = {
         body: JSON.stringify({
           image_id: presignData.image_id,
           delete_token: presignData.delete_token,
-          public_url: presignData.public_url
+          public_url: presignData.public_url,
+          size: file.size,
+          mime_type: file.type
         }),
       });
       
@@ -140,6 +142,19 @@ export const api = {
     } catch (error) {
       console.error(error);
       throw error;
+    }
+  },
+
+  getMyImages: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/images/me`, {
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error("Failed to fetch user images");
+      return await res.json();
+    } catch (e) {
+      console.error(e);
+      return [];
     }
   },
   

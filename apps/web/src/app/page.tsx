@@ -27,6 +27,17 @@ export default function Home() {
         if (profile.is_superadmin) setIsSuperadmin(true);
         if (profile.name) setUserName(profile.name);
         if (profile.email) setUserEmail(profile.email);
+        
+        // Fetch historical uploads on mount to prevent images disappearing on reload
+        api.getMyImages()
+          .then(images => {
+            const mapped = images.map((img: any) => ({
+              url: img.url,
+              name: img.url.split('/').pop() || img.id
+            }));
+            setUploadedImages(mapped);
+          })
+          .catch(console.error);
       })
       .catch(() => {
         window.location.href = "/login";

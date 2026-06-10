@@ -39,23 +39,28 @@ def get_presigned_url(
 @router.post("/confirm", response_model=ImageResponse, status_code=status.HTTP_201_CREATED)
 def confirm_upload(
     request: ImageConfirmRequest,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     # In a real app, you'd check R2 here using a HEAD request to ensure the file actually exists
     # For now, we trust the client and save metadata
     
-    # Normally we get the URL and details from a cache populated during the /presign step
-    # We will just scaffold the DB insert
     image_url = request.public_url if request.public_url else f"https://i.imageshare.com/{request.image_id}"
     db_image = Image(
         id=request.image_id,
         url=image_url,
-        mime_type="image/unknown", # To be fetched from cache/state
-        size=0,
+        mime_type=request.mime_type or "image/unknown",
+        size=request.size or 0,
+        user_id=current_user.id,
         delete_token=request.delete_token
     )
     
     session.add(db_image)
+    
+    # Update user's storage consumption
+    current_user.storage_used += db_image.size
+    session.add(current_user)
+    
     session.commit()
     session.refresh(db_image)
     
