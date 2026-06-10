@@ -69,7 +69,19 @@ def confirm_upload(
     )
 
 @router.put("/mock-upload/{object_name}")
-def mock_upload(object_name: str):
+async def mock_upload(object_name: str, request: Request):
+    import os
+    # Ensure static uploads directory exists
+    os.makedirs("static/uploads", exist_ok=True)
+    
+    # Read the incoming binary body stream
+    content = await request.body()
+    
+    # Save the file locally on the server disk
+    file_path = os.path.join("static/uploads", object_name)
+    with open(file_path, "wb") as f:
+        f.write(content)
+        
     return {"status": "ok", "message": "Mock upload successful"}
 
 @router.get("/me", response_model=list[ImageResponse])

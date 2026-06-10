@@ -66,7 +66,7 @@ class StorageService:
                 "image_id": image_id,
                 "object_name": object_name,
                 "upload_url": f"{base_url}/api/v1/images/mock-upload/{object_name}",
-                "public_url": f"https://picsum.photos/seed/{image_id}/800/600",
+                "public_url": f"{base_url}/static/uploads/{object_name}",
                 "delete_token": delete_token
             }
 

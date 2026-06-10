@@ -7,6 +7,9 @@ from app.db.database import init_db
 from app.api.routers import auth, images, ai_chat, analytics, admin
 
 # Initialize structured logging
+from fastapi.staticfiles import StaticFiles
+import os
+
 setup_logging()
 
 app = FastAPI(
@@ -24,6 +27,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files to serve local mock uploads
+os.makedirs("static/uploads", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Exception Handlers
 app.add_exception_handler(AuraException, aura_exception_handler)
