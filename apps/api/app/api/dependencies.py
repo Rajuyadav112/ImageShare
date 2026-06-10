@@ -29,3 +29,13 @@ def get_current_user(
         raise AuraException("User not found", status.HTTP_404_NOT_FOUND)
         
     return user
+
+def get_current_superadmin(
+    current_user = Depends(get_current_user)
+):
+    if not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: You do not have administrator permissions."
+        )
+    return current_user

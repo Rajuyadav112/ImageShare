@@ -4,7 +4,7 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.core.exceptions import AuraException, aura_exception_handler, global_exception_handler
 from app.db.database import init_db
-from app.api.routers import auth
+from app.api.routers import auth, images, ai_chat, analytics, admin
 
 # Initialize structured logging
 setup_logging()
@@ -19,6 +19,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origin_regex=r"https?://.*", # Allow any origin in local dev to support testing over LAN/Wi-Fi
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,4 +39,7 @@ def health_check():
 
 # Include routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth")
-# app.include_router(images.router, prefix=f"{settings.API_V1_STR}/images")
+app.include_router(images.router, prefix=f"{settings.API_V1_STR}/images")
+app.include_router(ai_chat.router, prefix=f"{settings.API_V1_STR}/chat")
+app.include_router(analytics.router, prefix=f"{settings.API_V1_STR}/analytics")
+app.include_router(admin.router, prefix=f"{settings.API_V1_STR}")

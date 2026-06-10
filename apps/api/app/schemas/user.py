@@ -5,6 +5,7 @@ from typing import Optional
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    phone: str
     name: Optional[str] = None
 
 class UserLogin(BaseModel):
@@ -16,9 +17,11 @@ class UserResponse(BaseModel):
     id: str
     email: EmailStr
     name: Optional[str] = None
+    phone: Optional[str] = None
     tier: str
     storage_used: int
     is_active: bool
+    is_superadmin: bool
 
 class Token(BaseModel):
     access_token: str
@@ -27,3 +30,9 @@ class Token(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+class GoogleSyncRequest(BaseModel):
+    email: EmailStr
+    name: Optional[str] = None
+    id: str
+
