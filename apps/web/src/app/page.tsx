@@ -19,11 +19,13 @@ export default function Home() {
   const [userName, setUserName] = useState("User");
   const [userEmail, setUserEmail] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api.getMe()
       .then(profile => {
+        setConnectionError(null);
         if (profile.is_superadmin) setIsSuperadmin(true);
         if (profile.name) setUserName(profile.name);
         if (profile.email) setUserEmail(profile.email);
@@ -39,8 +41,12 @@ export default function Home() {
           })
           .catch(console.error);
       })
-      .catch(() => {
-        window.location.href = "/login";
+      .catch((err: any) => {
+        if (err.status === 0 || err.status >= 500) {
+          setConnectionError("Backend server is offline or unreachable. Please make sure it is running.");
+        } else {
+          window.location.href = "/login";
+        }
       });
   }, []);
 
@@ -97,6 +103,20 @@ export default function Home() {
 
   return (
     <main className="flex flex-col h-screen w-full overflow-hidden bg-slate-50 text-slate-900">
+      {connectionError && (
+        <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-red-800 text-sm font-medium flex items-center justify-between shrink-0 z-30">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">⚠️</span>
+            <span>{connectionError}</span>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-xs transition-colors cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       
       {/* TOP NAVBAR */}
       <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-4 sm:px-8 z-20 shrink-0">

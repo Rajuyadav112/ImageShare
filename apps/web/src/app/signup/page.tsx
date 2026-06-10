@@ -19,8 +19,8 @@ export default function Signup() {
       await api.login(email, password);
       alert("Account created and logged in successfully!");
       window.location.href = "/";
-    } catch (error) {
-      alert("Registration failed. Email might be in use.");
+    } catch (error: any) {
+      alert(error.message || "Registration failed. Email might be in use.");
     } finally {
       setLoading(false);
     }

@@ -20,64 +20,61 @@ const getAuthHeaders = (contentType: string | null = "application/json") => {
   return headers;
 };
 
+// Helper to standardise and throw rich API errors
+const handleApiError = async (res: Response, fallbackMessage: string) => {
+  let message = fallbackMessage;
+  try {
+    const err = await res.json();
+    message = err.error || err.detail || fallbackMessage;
+  } catch {}
+  const error = new Error(message) as any;
+  error.status = res.status;
+  throw error;
+};
+
 export const api = {
   login: async (email: string, password: string) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Login failed");
-      }
-      const data = await res.json();
-      if (typeof window !== "undefined" && data.access_token) {
-        localStorage.setItem("token", data.access_token);
-      }
-      return data;
-    } catch (e) {
-      throw e;
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      await handleApiError(res, "Login failed");
     }
+    const data = await res.json();
+    if (typeof window !== "undefined" && data.access_token) {
+      localStorage.setItem("token", data.access_token);
+    }
+    return data;
   },
 
   signup: async (name: string, email: string, password: string, phone: string) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, phone }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Signup failed");
-      }
-      return await res.json();
-    } catch (e) {
-      throw e;
+    const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, phone }),
+    });
+    if (!res.ok) {
+      await handleApiError(res, "Signup failed");
     }
+    return await res.json();
   },
 
   googleSync: async (email: string, name: string, id: string) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/google-sync`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name, id }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Google sync failed");
-      }
-      const data = await res.json();
-      if (typeof window !== "undefined" && data.access_token) {
-        localStorage.setItem("token", data.access_token);
-      }
-      return data;
-    } catch (e) {
-      throw e;
+    const res = await fetch(`${API_BASE_URL}/auth/google-sync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, name, id }),
+    });
+    if (!res.ok) {
+      await handleApiError(res, "Google sync failed");
     }
+    const data = await res.json();
+    if (typeof window !== "undefined" && data.access_token) {
+      localStorage.setItem("token", data.access_token);
+    }
+    return data;
   },
 
   chat: async (instruction: string) => {
@@ -150,7 +147,9 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/images/me`, {
         headers: getAuthHeaders()
       });
-      if (!res.ok) throw new Error("Failed to fetch user images");
+      if (!res.ok) {
+        await handleApiError(res, "Failed to fetch user images");
+      }
       return await res.json();
     } catch (e) {
       console.error(e);
@@ -163,7 +162,9 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/analytics/me`, {
         headers: getAuthHeaders()
       });
-      if (!res.ok) throw new Error("Failed to fetch analytics");
+      if (!res.ok) {
+        await handleApiError(res, "Failed to fetch analytics");
+      }
       return await res.json();
     } catch (e) {
       console.error(e);
@@ -173,11 +174,20 @@ export const api = {
   },
 
   getMe: async () => {
-    const res = await fetch(`${API_BASE_URL}/auth/me`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error("Failed to fetch profile");
-    return await res.json();
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) {
+        await handleApiError(res, "Failed to fetch profile");
+      }
+      return await res.json();
+    } catch (e: any) {
+      if (e.status === undefined) {
+        e.status = 0; // Signifies network connection failure
+      }
+      throw e;
+    }
   },
 
   // ==========================================
@@ -188,8 +198,7 @@ export const api = {
       headers: getAuthHeaders()
     });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Failed to fetch users");
+      await handleApiError(res, "Failed to fetch users");
     }
     return await res.json();
   },
@@ -201,8 +210,7 @@ export const api = {
       body: JSON.stringify({ is_active })
     });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Failed to update status");
+      await handleApiError(res, "Failed to update status");
     }
     return await res.json();
   },
@@ -214,8 +222,7 @@ export const api = {
       body: JSON.stringify({ tier })
     });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Failed to update tier");
+      await handleApiError(res, "Failed to update tier");
     }
     return await res.json();
   },
@@ -225,8 +232,7 @@ export const api = {
       headers: getAuthHeaders()
     });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Failed to fetch stats");
+      await handleApiError(res, "Failed to fetch stats");
     }
     return await res.json();
   }

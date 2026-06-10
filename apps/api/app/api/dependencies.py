@@ -28,6 +28,12 @@ def get_current_user(
     if not user:
         raise AuraException("User not found", status.HTTP_404_NOT_FOUND)
         
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Currently you have been blocked from this platform"
+        )
+        
     return user
 
 def get_current_superadmin(

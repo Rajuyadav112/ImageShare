@@ -36,6 +36,9 @@ class AuthService:
         if not user or not verify_password(user_in.password, user.hashed_password):
             raise AuraException("Incorrect email or password", status.HTTP_401_UNAUTHORIZED)
         
+        if not user.is_active:
+            raise AuraException("Currently you have been blocked from this platform", status.HTTP_403_FORBIDDEN)
+            
         return Token(
             access_token=create_access_token(subject=user.id),
             refresh_token=create_refresh_token(subject=user.id)
