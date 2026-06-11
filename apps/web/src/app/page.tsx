@@ -156,7 +156,7 @@ export default function Home() {
             }`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <span className="hidden sm:inline">✨ Aura AI</span>
+            <span className="hidden sm:inline">✨ Media AI</span>
           </button>
           
           <div className="h-6 w-[1px] bg-slate-200 hidden sm:block"></div>
@@ -250,7 +250,7 @@ export default function Home() {
                <h2 className="text-lg font-semibold text-slate-800 mb-4">Media Collections</h2>
                {uploadedImages.length === 0 ? (
                   <div className="text-slate-500 text-sm py-12 text-center border border-slate-100 rounded-xl bg-slate-50">
-                    No assets uploaded yet. Use the upload box or tell Aura AI to generate one.
+                    No assets uploaded yet. Use the upload box or tell Media AI to generate one.
                   </div>
                ) : (
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -295,7 +295,7 @@ export default function Home() {
           <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-2">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-              <h2 className="text-sm font-semibold text-slate-800">Aura AI Copilot</h2>
+              <h2 className="text-sm font-semibold text-slate-800">Media AI Copilot</h2>
             </div>
             <button 
               onClick={() => setIsChatOpen(false)}
@@ -359,7 +359,7 @@ export default function Home() {
                     handleSend();
                   }
                 }}
-                placeholder="Ask Aura AI to generate or edit..." 
+                placeholder="Ask Media AI to generate or edit..." 
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-12 py-3 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
                 rows={2}
               />
