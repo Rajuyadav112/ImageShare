@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import ImageViewer from "@/components/ImageViewer";
 
 type Message = { role: "user" | "ai", text: string, imageUrl?: string };
-type UploadedImage = { url: string, name: string };
+type UploadedImage = { id: string, url: string, name: string };
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -20,7 +20,17 @@ export default function Home() {
   const [userEmail, setUserEmail] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [processingImageId, setProcessingImageId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setActiveMenuId(null);
+    };
+    window.addEventListener("click", handleOutsideClick);
+    return () => window.removeEventListener("click", handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     api.getMe()
@@ -34,6 +44,7 @@ export default function Home() {
         api.getMyImages()
           .then(images => {
             const mapped = images.map((img: any) => ({
+              id: img.id,
               url: img.url,
               name: img.url.split('/').pop() || img.id
             }));
@@ -85,6 +96,36 @@ export default function Home() {
     }
   };
 
+  const handleDelete = async (imageId: string) => {
+    if (!confirm("Are you sure you want to delete this image?")) return;
+    try {
+      await api.deleteImage(imageId);
+      setUploadedImages(prev => prev.filter(img => img.id !== imageId));
+      alert("Image deleted successfully!");
+    } catch (error: any) {
+      alert(error.message || "Failed to delete image");
+    }
+  };
+
+  const handleRemoveBackground = async (imageId: string) => {
+    setProcessingImageId(imageId);
+    try {
+      const data = await api.removeBackground(imageId);
+      const newImg = {
+        id: data.id,
+        url: data.url,
+        name: data.url.split('/').pop() || data.id
+      };
+      setUploadedImages(prev => [newImg, ...prev]);
+      alert("Background removed successfully! Transparent version added to your gallery.");
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "Failed to remove background");
+    } finally {
+      setProcessingImageId(null);
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -92,7 +133,7 @@ export default function Home() {
     setIsUploading(true);
     try {
       const data = await api.uploadImage(file);
-      setUploadedImages(prev => [{ url: data.url, name: file.name }, ...prev]);
+      setUploadedImages(prev => [{ id: data.id, url: data.url, name: file.name }, ...prev]);
     } catch (error) {
       alert("Upload failed. Make sure your local backend is running!");
     } finally {
@@ -254,15 +295,69 @@ export default function Home() {
                   </div>
                ) : (
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                   {uploadedImages.map((img, i) => (
-                     <div key={i} className="border border-slate-200 rounded-xl p-3 flex flex-col gap-3 group bg-white shadow-sm hover:shadow-md transition-shadow">
-                       <div 
-                         className="aspect-video bg-slate-100 rounded-lg overflow-hidden relative cursor-zoom-in group-hover:opacity-95 transition-opacity"
-                         onClick={() => setSelectedImageUrl(img.url)}
-                         title="Click to view full resolution"
-                       >
-                         <img src={img.url} className="absolute inset-0 w-full h-full object-cover" alt={img.name} />
-                       </div>
+                    {uploadedImages.map((img, i) => (
+                      <div key={i} className="border border-slate-200 rounded-xl p-3 flex flex-col gap-3 group bg-white shadow-sm hover:shadow-md transition-shadow relative">
+                        <div className="relative aspect-video bg-slate-100 rounded-lg overflow-hidden">
+                          <img 
+                            src={img.url} 
+                            className="absolute inset-0 w-full h-full object-cover cursor-zoom-in group-hover:scale-[1.02] transition-transform duration-200" 
+                            alt={img.name} 
+                            onClick={() => setSelectedImageUrl(img.url)}
+                            title="Click to view full resolution"
+                          />
+                          
+                          {/* Floating Actions Menu Button */}
+                          <div className="absolute top-2 right-2 z-10">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuId(activeMenuId === img.id ? null : img.id);
+                              }}
+                              className="w-8 h-8 rounded-lg bg-white/95 backdrop-blur-sm shadow-md border border-slate-200/50 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all cursor-pointer hover:scale-105"
+                              title="Image Actions"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                            </button>
+                            
+                            {activeMenuId === img.id && (
+                              <div 
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute right-0 mt-1 w-32 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-20"
+                              >
+                                <button
+                                  onClick={() => {
+                                    setSelectedImageUrl(img.url);
+                                    setActiveMenuId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                  View Image
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleRemoveBackground(img.id);
+                                    setActiveMenuId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer font-medium border-t border-slate-100"
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-blue-600"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                  Remove BG
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleDelete(img.id);
+                                    setActiveMenuId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1.5 cursor-pointer font-semibold border-t border-slate-100"
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                  Delete Image
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                        <div>
                          <p className="text-slate-800 text-sm font-medium truncate mb-2" title={img.name}>{img.name}</p>
                          <div className="flex gap-2">
@@ -278,6 +373,16 @@ export default function Home() {
                            </button>
                          </div>
                        </div>
+                       {processingImageId === img.id && (
+                         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm rounded-xl z-20 flex flex-col items-center justify-center text-white gap-2 p-4 transition-all duration-300">
+                           <div className="relative w-10 h-10 flex items-center justify-center">
+                             <div className="absolute w-full h-full rounded-full border-4 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+                             <div className="absolute w-full h-full rounded-full border-4 border-slate-500/30"></div>
+                             <span className="text-xs">✨</span>
+                           </div>
+                           <span className="text-xs font-semibold tracking-wider uppercase animate-pulse">Removing BG...</span>
+                         </div>
+                       )}
                      </div>
                    ))}
                  </div>

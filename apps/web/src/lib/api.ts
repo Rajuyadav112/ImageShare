@@ -156,6 +156,28 @@ export const api = {
       return [];
     }
   },
+
+  deleteImage: async (imageId: string) => {
+    const res = await fetch(`${API_BASE_URL}/images/${imageId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders()
+    });
+    if (!res.ok) {
+      await handleApiError(res, "Failed to delete image");
+    }
+    return await res.json();
+  },
+
+  removeBackground: async (imageId: string) => {
+    const res = await fetch(`${API_BASE_URL}/images/${imageId}/remove-bg`, {
+      method: "POST",
+      headers: getAuthHeaders()
+    });
+    if (!res.ok) {
+      await handleApiError(res, "Failed to remove background");
+    }
+    return await res.json();
+  },
   
   getAnalytics: async () => {
     try {

@@ -94,6 +94,16 @@ class StorageService:
         }
 
     def delete_image(self, object_name: str) -> bool:
+        if not self.r2_configured:
+            import os
+            try:
+                file_path = os.path.join("static/uploads", object_name)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return True
+            except Exception as e:
+                logger.error("mock_delete_failed", error=str(e))
+                return False
         try:
             self.s3_client.delete_object(Bucket=self.bucket, Key=object_name)
             return True
