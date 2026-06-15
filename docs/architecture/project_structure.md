@@ -8,7 +8,7 @@
 Since we are combining a **TypeScript Frontend (Next.js)** with a **Python Backend (FastAPI)** for AI integrations, we are using a Polyglot Monorepo. We recommend using **Turborepo** to orchestrate tasks across both languages.
 
 ```text
-aurashare-monorepo/
+imageshare-monorepo/
 ├── apps/
 │   ├── web/               # Next.js (App Router) Frontend (TypeScript)
 │   │   ├── package.json

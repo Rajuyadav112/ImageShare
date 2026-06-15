@@ -1,5 +1,5 @@
 # System Design & Architecture
-## Image Upload & Share Platform (Codename: "AuraShare")
+## Image Upload & Share Platform (Codename: "ImageShare")
 
 ---
 
@@ -70,7 +70,7 @@ sequenceDiagram
     participant Origin as Cloudflare R2 (Origin)
     participant DB as Postgres (Async Logging)
     
-    U->>Edge: GET https://i.aurashare.com/x9f2k3.webp
+    U->>Edge: GET https://i.imageshare.com/x9f2k3.webp
     alt In Cache? (Cache Hit)
         Edge-->>U: Return 200 OK (from Edge RAM)
     else Cache Miss
@@ -91,7 +91,7 @@ sequenceDiagram
 **Why Cloudflare R2?** 
 AWS S3 charges significant fees for bandwidth out (egress). Since this platform is an image sharing service, bandwidth out will be our largest cost. Cloudflare R2 offers **zero egress fees** and seamless integration with Cloudflare CDN, making it the financially viable choice for heavy read operations.
 
-* **Bucket Strategy**: Single primary bucket (`aurashare-production`).
+* **Bucket Strategy**: Single primary bucket (`imageshare-production`).
 * **Object Naming**: Random cryptographically secure 12-character strings (e.g., `a7X9m2PqL4x1.webp`) to prevent enumeration attacks and ensure uniform distribution across storage partitions.
 * **Lifecycle Policies**: None for MVP, as images are permanent. A future lifecycle rule might handle soft-deleted images (archived for 30 days before hard deletion).
 
@@ -100,11 +100,11 @@ AWS S3 charges significant fees for bandwidth out (egress). Since this platform 
 ## 5. CDN Architecture
 
 **Domain Strategy**:
-1. `aurashare.com`: Frontend Next.js app.
-2. `api.aurashare.com`: FastAPI Backend.
-3. `i.aurashare.com`: Direct image delivery domain pointing to the R2 bucket.
+1. `imageshare.com`: Frontend Next.js app.
+2. `api.imageshare.com`: FastAPI Backend.
+3. `i.imageshare.com`: Direct image delivery domain pointing to the R2 bucket.
 
-**Caching Rules (`i.aurashare.com`)**:
+**Caching Rules (`i.imageshare.com`)**:
 * **Cache-Control**: `public, max-age=31536000, immutable` (Cache for 1 year).
 * **Browser Cache TTL**: 1 year.
 * **Edge Cache TTL**: 1 month.

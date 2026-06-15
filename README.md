@@ -1,6 +1,6 @@
-# AuraShare AI (ImageShare) 🚀
+# ImageShare 🚀
 
-AuraShare AI is a premium, full-stack image management and AI processing platform. It allows users to instantly upload any image and get a live, public, and embeddable URL to share or use anywhere on the web. It also features free, server-side AI-powered background removal and an interactive Media AI Copilot.
+ImageShare is a premium, full-stack image management and AI processing platform. It allows users to instantly upload any image and get a live, public, and embeddable URL to share or use anywhere on the web. It also features free, server-side AI-powered background removal and an interactive Media AI Copilot.
 
 ---
 

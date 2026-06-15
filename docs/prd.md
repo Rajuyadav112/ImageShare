@@ -1,11 +1,11 @@
 # Product Requirements Document (PRD)
-## Image Upload & Share Platform (Codename: "AuraShare")
+## Image Upload & Share Platform (Codename: "ImageShare")
 
 ---
 
 ## 1. Executive Summary & Vision
 
-**AuraShare** is a high-performance, developer-friendly, and consumer-friendly image hosting and sharing platform. The mission is to provide an ultra-fast, secure, and infinitely scalable platform where users can upload images, receive permanent, optimized public URLs, and have those images render seamlessly across any client, application, or markdown viewer globally. 
+**ImageShare** is a high-performance, developer-friendly, and consumer-friendly image hosting and sharing platform. The mission is to provide an ultra-fast, secure, and infinitely scalable platform where users can upload images, receive permanent, optimized public URLs, and have those images render seamlessly across any client, application, or markdown viewer globally. 
 
 We aim to combine the developer accessibility of Cloudinary with the casual ease-of-use of Imgur.
 
@@ -25,7 +25,7 @@ We aim to combine the developer accessibility of Cloudinary with the casual ease
 
 ### 2.3 Developer Persona
 * **Story**: As a developer, I want to generate and manage API Keys from my dashboard so that I can programmatically upload images from my own applications, scripts, or blogs.
-* **Story**: As a developer, I want my uploaded images to have clean, customizable direct-link paths (e.g., `https://i.aurashare.com/abc123xyz.png`) that bypass HTML wrapper pages, ensuring they render perfectly in Markdown, Slack, Discord, and native `<img>` tags.
+* **Story**: As a developer, I want my uploaded images to have clean, customizable direct-link paths (e.g., `https://i.imageshare.com/abc123xyz.png`) that bypass HTML wrapper pages, ensuring they render perfectly in Markdown, Slack, Discord, and native `<img>` tags.
 * **Story**: As a developer, I want to query detailed usage analytics (views, bandwidth consumed) for my API-uploaded images to understand traffic patterns.
 
 ---
@@ -46,8 +46,8 @@ We aim to combine the developer accessibility of Cloudinary with the casual ease
 
 ### 3.2 Delivery & Rendering Engine
 * **Dual URL Routing**:
-  - **Direct Image Link**: `https://i.aurashare.com/:id.:ext` (e.g., `i.aurashare.com/x9f2k3.webp`). Returns the raw image file with correct MIME types and aggressive CDN caching headers (`Cache-Control: public, max-age=31536000, immutable`).
-  - **Viewer Page Link**: `https://aurashare.com/v/:id` (e.g., `aurashare.com/v/x9f2k3`). A beautiful responsive landing page displaying the image, its meta details, dimensions, and quick-copy buttons for Direct Link, Markdown Embed, HTML Embed, and Forum BBCode.
+  - **Direct Image Link**: `https://i.imageshare.com/:id.:ext` (e.g., `i.imageshare.com/x9f2k3.webp`). Returns the raw image file with correct MIME types and aggressive CDN caching headers (`Cache-Control: public, max-age=31536000, immutable`).
+  - **Viewer Page Link**: `https://imageshare.com/v/:id` (e.g., `imageshare.com/v/x9f2k3`). A beautiful responsive landing page displaying the image, its meta details, dimensions, and quick-copy buttons for Direct Link, Markdown Embed, HTML Embed, and Forum BBCode.
 * **Image Auto-Optimization**:
   - On upload, process images to generate multiple responsive widths and convert to highly efficient WEBP format to save storage and CDN bandwidth.
 
@@ -150,7 +150,7 @@ sequenceDiagram
 | **Storage & Optimization**| WEBP conversion, R2 preservation, 1 size | Multi-resolution resizing, Smart Cropping, AVIF |
 | **Analytics** | View counter (simple increment) | Detailed geolocation, referral, bandwidth tracking |
 | **Collaboration** | Single User ownership | Team workspaces, collaborative galleries |
-| **Custom Domains** | Single global domain (`i.aurashare.com`) | White-labeled custom CNAME support (`cdn.mycompany.com`) |
+| **Custom Domains** | Single global domain (`i.imageshare.com`) | White-labeled custom CNAME support (`cdn.mycompany.com`) |
 | **Monetization** | Free tier with storage limits, Stripe integration for premium subscription | Advanced tiering for teams and enterprise |
 
 ---
@@ -177,7 +177,7 @@ sequenceDiagram
   - Actions: Open link, Copy direct link, and Delete image (triggers a confirmation modal).
   - Search bar to filter images by title/filename.
 
-### Feature 3: Direct Link Delivery Endpoint (`i.aurashare.com`)
+### Feature 3: Direct Link Delivery Endpoint (`i.imageshare.com`)
 * **Description**: The high-performance sub-domain/endpoint responsible for rendering raw images.
 * **Acceptance Criteria**:
   - Must stream the binary image payload with correct content-type header (e.g. `image/png`, `image/webp`).
